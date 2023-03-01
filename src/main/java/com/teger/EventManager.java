@@ -579,4 +579,85 @@ public class EventManager implements Listener {
             item.addUnsafeEnchantment(Enchantment.DURABILITY, unbreaking_level);
         }
     }
+
+    @EventHandler
+    public void onBreakCrops(BlockBreakEvent e){
+        Player player = e.getPlayer();
+        Block block = e.getBlock();
+        PlayerData data = PlayerData.getInstance(player);
+        int level = data.getLevel(ExpertiseType.TILLAGE);
+        int seed_level = level >= 4 ? level >= 7 ? 2 : 1 : 0;
+        int crop_level = level >= 11 ? level >= 15 ? 2 : 1 : 0;
+        if(seed_level > 0){
+            int randomAmount = random.nextInt(3) + seed_level;
+            if(block.getType().equals(Material.WHEAT) ||
+                block.getType().equals(Material.GRASS)){
+                if(block.getType().equals(Material.WHEAT) && ((Ageable)block.getBlockData()).getAge() < 7) return;
+                boolean exist = false;
+                for(ItemStack item : block.getDrops()){
+                    if(item.getType().equals(Material.WHEAT_SEEDS)){
+                        exist = true;
+                        item.setAmount(item.getAmount() + randomAmount);
+                    }
+                }
+                if(!exist){
+                    block.getDrops().add(new ItemStack(Material.WHEAT_SEEDS, randomAmount));
+                }
+            }
+        }
+        if(crop_level > 0){
+            int randomAmount = random.nextInt(3) + crop_level;
+            if(block.getType().equals(Material.WHEAT)
+                    || block.getType().equals(Material.CARROTS)
+                    || block.getType().equals(Material.BEETROOTS)
+                    || block.getType().equals(Material.POTATOES)
+                    || block.getType().equals(Material.SUGAR_CANE)){
+                if(block.getType().equals(Material.WHEAT)
+                    || block.getType().equals(Material.CARROTS)
+                    || block.getType().equals(Material.POTATOES) && ((Ageable)block.getBlockData()).getAge() < 7) return;
+                if(block.getType().equals(Material.BEETROOTS) && ((Ageable)block.getBlockData()).getAge() < 3) return;
+                Location location = block.getLocation();
+                location.setY(location.getBlockY()-1);
+                if(block.getType().equals(Material.SUGAR_CANE)
+                        && location.getWorld().getBlockAt(location).getType().equals(Material.SUGAR_CANE)) return;
+                if(block.getType().equals(Material.SUGAR_CANE)
+                        && isNonePoint(block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ())) return;
+                if(block.getType().equals(Material.WHEAT)){
+                    for(ItemStack item : block.getDrops()){
+                        if(item.getType().equals(Material.WHEAT)){
+                            item.setAmount(item.getAmount() + randomAmount);
+                        }
+                    }
+                }
+                if(block.getType().equals(Material.CARROTS)){
+                    for(ItemStack item : block.getDrops()){
+                        if(item.getType().equals(Material.CARROT)){
+                            item.setAmount(item.getAmount() + randomAmount);
+                        }
+                    }
+                }
+                if(block.getType().equals(Material.BEETROOTS)){
+                    for(ItemStack item : block.getDrops()){
+                        if(item.getType().equals(Material.BEETROOT)){
+                            item.setAmount(item.getAmount() + randomAmount);
+                        }
+                    }
+                }
+                if(block.getType().equals(Material.POTATOES)){
+                    for(ItemStack item : block.getDrops()){
+                        if(item.getType().equals(Material.POTATO)){
+                            item.setAmount(item.getAmount() + randomAmount);
+                        }
+                    }
+                }
+                if(block.getType().equals(Material.SUGAR_CANE)){
+                    for(ItemStack item : block.getDrops()){
+                        if(item.getType().equals(Material.SUGAR_CANE)){
+                            item.setAmount(item.getAmount() + randomAmount);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
