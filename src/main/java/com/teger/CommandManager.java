@@ -15,7 +15,12 @@ public class CommandManager implements CommandExecutor {
     public boolean onCommand(CommandSender cs, Command c, String l, String[] a) {
         if(!(cs instanceof Player)) return true;
         Player player = (Player) cs;
-        player.openInventory(JobInventory.getInventory(player));
+        if(a.length > 0){
+            PlayerData data = PlayerData.getInstance(player);
+            data.addTotalExp(ExpertiseType.valueOf(a[0]), Integer.parseInt(a[1]));
+        } else {
+            player.openInventory(JobInventory.getInventory(player));
+        }
         return false;
     }
 }

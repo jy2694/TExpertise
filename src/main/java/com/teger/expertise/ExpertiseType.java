@@ -4,8 +4,8 @@ public enum ExpertiseType {
     CRAFT("CRAFT"),
     MINE("MINE"),
     TILLAGE("TILLAGE"),
-    WOODCUTTING("WOODCUTTING"),
-    FISHERMAN("FISHING");
+    WOOD("WOODCUTTING"),
+    FISH("FISHING");
 
 
     private String name;

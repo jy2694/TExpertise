@@ -29,14 +29,14 @@ public class JobInventory {
         int mineLevel = data.getLevel(ExpertiseType.MINE),
                 craftLevel = data.getLevel(ExpertiseType.CRAFT),
                 tillageLevel = data.getLevel(ExpertiseType.TILLAGE),
-                woodLevel = data.getLevel(ExpertiseType.WOODCUTTING),
-                fishLevel = data.getLevel(ExpertiseType.FISHERMAN);
+                woodLevel = data.getLevel(ExpertiseType.WOOD),
+                fishLevel = data.getLevel(ExpertiseType.FISH);
 
         double mineExp = data.getExp(ExpertiseType.MINE),
                 craftExp = data.getExp(ExpertiseType.CRAFT),
                 tillageExp = data.getExp(ExpertiseType.TILLAGE),
-                woodExp = data.getExp(ExpertiseType.WOODCUTTING),
-                fishExp = data.getExp(ExpertiseType.FISHERMAN);
+                woodExp = data.getExp(ExpertiseType.WOOD),
+                fishExp = data.getExp(ExpertiseType.FISH);
 
         double mineReqExp = 60 * Math.pow(1.3, mineLevel-1),
                 craftReqExp = 60 * Math.pow(1.3, craftLevel-1),
@@ -184,19 +184,20 @@ public class JobInventory {
         } else if(fishLevel > 8 && fishLevel <= 12){
             fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.YELLOW+"Lv.2");
         } else if(fishLevel > 12 && fishLevel <= 15){
-            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.RED+"Lv.3");
-        } else if(fishLevel > 15 && fishLevel <= 21){
-            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.RED+"Lv.3");
+            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.YELLOW+"Lv.2");
             fishLore.add(ChatColor.WHITE + "Luck of the sea Lv.1");
-        } else if(fishLevel > 21 && fishLevel <= 28){
-            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.RED+"Lv.3");
+        } else if(fishLevel > 15 && fishLevel <= 21){
+            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.YELLOW+"Lv.2");
             fishLore.add(ChatColor.WHITE + "Luck of the sea "+ChatColor.YELLOW+"Lv.2");
+        } else if(fishLevel > 21 && fishLevel <= 28){
+            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.YELLOW+"Lv.2");
+            fishLore.add(ChatColor.WHITE + "Luck of the sea "+ChatColor.RED+"Lv.3");
         } else if(fishLevel > 28 && fishLevel <= 29){
-            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.RED+"Lv.3");
-            fishLore.add(ChatColor.WHITE + "Luck of the sea "+ChatColor.RED+"Lv.3");
+            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.YELLOW+"Lv.2");
+            fishLore.add(ChatColor.WHITE + "Luck of the sea "+ChatColor.GREEN+"Lv.4");
         } else if(fishLevel >= 30){
-            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.RED+"Lv.3");
-            fishLore.add(ChatColor.WHITE + "Luck of the sea "+ChatColor.RED+"Lv.3");
+            fishLore.add(ChatColor.WHITE + "Lure "+ChatColor.YELLOW+"Lv.2");
+            fishLore.add(ChatColor.WHITE + "Luck of the sea "+ChatColor.GREEN+"Lv.4");
             fishLore.add(ChatColor.WHITE + "Water Breathing Effect");
         }
 

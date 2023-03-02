@@ -34,18 +34,37 @@ public class EventManager implements Listener {
 
     private SecureRandom random = new SecureRandom();
 
+    //경험치 증가 부분
+
     @EventHandler
     public void onWoodBreak(BlockBreakEvent e){
         Block block = e.getBlock();
         if(block.getType().toString().endsWith("_LOG")){
             Player player = e.getPlayer();
             PlayerData data = PlayerData.getInstance(player);
-            int previousLevel = data.getLevel(ExpertiseType.WOODCUTTING);
+            int previousLevel = data.getLevel(ExpertiseType.WOOD);
             if(previousLevel == 30) return;
-            data.addTotalExp(ExpertiseType.WOODCUTTING, 10);
-            int newLevel = data.getLevel(ExpertiseType.WOODCUTTING);
-            if(previousLevel < newLevel)
+            data.addTotalExp(ExpertiseType.WOOD, 10);
+            int newLevel = data.getLevel(ExpertiseType.WOOD);
+            if(previousLevel < newLevel) {
                 player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[WOOD] ") + ChatColor.GREEN + " The WoodCutting level has increased. (" + previousLevel + " -> " + newLevel + ")");
+                ItemStack item = player.getInventory().getItemInMainHand();
+                if(item.getType().toString().endsWith("_AXE")){
+                    int previous_efficiency_level = (previousLevel >= 4 && previousLevel <= 6) ? 1 :
+                            (previousLevel >= 7 && previousLevel <= 9) ? 2 :
+                                    (previousLevel >= 10 && previousLevel <= 14) ? 3 :
+                                            (previousLevel >= 15 && previousLevel <= 19) ? 4 :
+                                                    (previousLevel >= 20) ? 5 : 0;
+                    int new_efficiency_level = (newLevel >= 4 && newLevel <= 6) ? 1 :
+                            (newLevel >= 7 && newLevel <= 9) ? 2 :
+                                    (newLevel >= 10 && newLevel <= 14) ? 3 :
+                                            (newLevel >= 15 && newLevel <= 19) ? 4 :
+                                                    (newLevel >= 20) ? 5 : 0;
+                    int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED)-previous_efficiency_level+new_efficiency_level;
+                    item.removeEnchantment(Enchantment.DIG_SPEED);
+                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                }
+            }
         }
     }
 
@@ -59,8 +78,30 @@ public class EventManager implements Listener {
             if(previousLevel == 30) return;
             data.addTotalExp(ExpertiseType.MINE, 7);
             int newLevel = data.getLevel(ExpertiseType.MINE);
-            if(previousLevel < newLevel)
+            if(previousLevel < newLevel) {
                 player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[MINE] ") + ChatColor.GREEN + " The mining level has increased. (" + previousLevel + " -> " + newLevel + ")");
+                ItemStack item = player.getInventory().getItemInMainHand();
+                if(item.getType().toString().endsWith("_PICKAXE")){
+                    int previous_efficiency_level = (previousLevel >= 4 && previousLevel <= 6) ? 1 :
+                            (previousLevel >= 7 && previousLevel <= 9) ? 2 :
+                                    (previousLevel >= 10) ? 3 : 0;
+                    int previous_fortune_level = (previousLevel >= 15 && previousLevel <= 22) ? 1 :
+                            (previousLevel >= 23 && previousLevel <= 29) ? 2 :
+                                    (previousLevel >= 30) ? 3 : 0;
+                    int new_efficiency_level = (newLevel >= 4 && newLevel <= 6) ? 1 :
+                            (newLevel >= 7 && newLevel <= 9) ? 2 :
+                                    (newLevel >= 10) ? 3 : 0;
+                    int new_fortune_level = (newLevel >= 15 && newLevel <= 22) ? 1 :
+                            (newLevel >= 23 && newLevel <= 29) ? 2 :
+                                    (newLevel >= 30) ? 3 : 0;
+                    int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED) - previous_efficiency_level + new_efficiency_level;
+                    int fortune = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) - previous_fortune_level + new_fortune_level;
+                    item.removeEnchantment(Enchantment.DIG_SPEED);
+                    item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                    if(fortune > 0) item.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortune);
+                }
+            }
         } else if(block.getType().equals(Material.STONE)
                 || block.getType().equals(Material.COBBLESTONE) || block.getType().equals(Material.MOSSY_COBBLESTONE)
                 || block.getType().equals(Material.SMOOTH_STONE) || block.getType().equals(Material.STONE_BRICKS)
@@ -78,8 +119,30 @@ public class EventManager implements Listener {
             if(previousLevel == 30) return;
             data.addTotalExp(ExpertiseType.MINE, 3);
             int newLevel = data.getLevel(ExpertiseType.MINE);
-            if(previousLevel < newLevel)
+            if(previousLevel < newLevel) {
                 player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[MINE] ") + ChatColor.GREEN + " The mining level has increased. (" + previousLevel + " -> " + newLevel + ")");
+                ItemStack item = player.getInventory().getItemInMainHand();
+                if(item.getType().toString().endsWith("_PICKAXE")){
+                    int previous_efficiency_level = (previousLevel >= 4 && previousLevel <= 6) ? 1 :
+                            (previousLevel >= 7 && previousLevel <= 9) ? 2 :
+                                    (previousLevel >= 10) ? 3 : 0;
+                    int previous_fortune_level = (previousLevel >= 15 && previousLevel <= 22) ? 1 :
+                            (previousLevel >= 23 && previousLevel <= 29) ? 2 :
+                                    (previousLevel >= 30) ? 3 : 0;
+                    int new_efficiency_level = (newLevel >= 4 && newLevel <= 6) ? 1 :
+                            (newLevel >= 7 && newLevel <= 9) ? 2 :
+                                    (newLevel >= 10) ? 3 : 0;
+                    int new_fortune_level = (newLevel >= 15 && newLevel <= 22) ? 1 :
+                            (newLevel >= 23 && newLevel <= 29) ? 2 :
+                                    (newLevel >= 30) ? 3 : 0;
+                    int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED) - previous_efficiency_level + new_efficiency_level;
+                    int fortune = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) - previous_fortune_level + new_fortune_level;
+                    item.removeEnchantment(Enchantment.DIG_SPEED);
+                    item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
+                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                    if(fortune > 0) item.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortune);
+                }
+            }
         }
     }
 
@@ -128,23 +191,37 @@ public class EventManager implements Listener {
         if(e.getState() == PlayerFishEvent.State.CAUGHT_FISH && entity instanceof Item){
             Player player = e.getPlayer();
             PlayerData data = PlayerData.getInstance(player);
-            int previousLevel = data.getLevel(ExpertiseType.FISHERMAN);
+            int previousLevel = data.getLevel(ExpertiseType.FISH);
             if(previousLevel == 30) return;
             Item item = (Item) entity;
             ItemStack itemStack = item.getItemStack();
             if(itemStack.getType().equals(Material.COD) || itemStack.getType().equals(Material.SALMON)
                 || itemStack.getType().equals(Material.TROPICAL_FISH) || itemStack.getType().equals(Material.PUFFERFISH)){
-                data.addTotalExp(ExpertiseType.FISHERMAN, 5);
+                data.addTotalExp(ExpertiseType.FISH, 5);
             } else if(itemStack.getType().equals(Material.NAUTILUS_SHELL)){
-                data.addTotalExp(ExpertiseType.FISHERMAN, 50);
+                data.addTotalExp(ExpertiseType.FISH, 50);
             } else if(itemStack.getType().equals(Material.ENCHANTED_BOOK)){
-                data.addTotalExp(ExpertiseType.FISHERMAN, 10);
+                data.addTotalExp(ExpertiseType.FISH, 10);
             } else {
-                data.addTotalExp(ExpertiseType.FISHERMAN, 8);
+                data.addTotalExp(ExpertiseType.FISH, 8);
             }
-            int newLevel = data.getLevel(ExpertiseType.FISHERMAN);
-            if(previousLevel < newLevel)
+            int newLevel = data.getLevel(ExpertiseType.FISH);
+            if(previousLevel < newLevel) {
                 player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[FISHING] ") + ChatColor.GREEN + " The Fishing level has increased. (" + previousLevel + " -> " + newLevel + ")");
+                ItemStack hand = player.getInventory().getItemInMainHand();
+                if(hand.getType().equals(Material.FISHING_ROD)){
+                    int previous_lure_level = previousLevel >= 5 ? previousLevel >= 9 ? 2 : 1 : 0;
+                    int previous_luck_level = previousLevel >= 13 ? previousLevel >= 16 ? previousLevel >= 22 ? previousLevel >= 29 ? 4 : 3 : 2 : 1 : 0;
+                    int new_lure_level = newLevel >= 5 ? newLevel >= 9 ?  2 : 1 : 0;
+                    int new_luck_level = newLevel >= 13 ? newLevel >= 16 ? newLevel >= 22 ? newLevel >= 29 ? 4 : 3 : 2 : 1 : 0;
+                    int lure = hand.getEnchantmentLevel(Enchantment.LURE) - previous_lure_level + new_lure_level;
+                    int luck = hand.getEnchantmentLevel(Enchantment.LUCK) - previous_luck_level + new_luck_level;
+                    hand.removeEnchantment(Enchantment.LURE);
+                    hand.removeEnchantment(Enchantment.LUCK);
+                    if(lure > 0) hand.addUnsafeEnchantment(Enchantment.LURE, lure);
+                    if(luck > 0) hand.addUnsafeEnchantment(Enchantment.LUCK, luck);
+                }
+            }
         }
     }
 
@@ -270,14 +347,14 @@ public class EventManager implements Listener {
                     if(efficiency > 0)item.addEnchantment(Enchantment.DIG_SPEED, efficiency);
                     if(fortune > 0)item.addEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortune);
                 }
-                level = data.getLevel(ExpertiseType.WOODCUTTING);
+                level = data.getLevel(ExpertiseType.WOOD);
                 efficiency_level = (level >= 4 && level <= 6) ? 1 :
                         (level >= 7 && level <= 9) ? 2 :
                                 (level >= 10 && level <= 14) ? 3 :
                                         (level >= 15 && level <= 19) ? 4 :
                                                 (level >= 20) ? 5 : 0;
                 if(cursor.getType().toString().endsWith("_AXE")){
-                    int efficiency = cursor.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
+                    int efficiency = cursor.getEnchantmentLevel(Enchantment.DIG_SPEED)+efficiency_level;
                     cursor.removeEnchantment(Enchantment.DIG_SPEED);
                     if(efficiency > 0) cursor.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
                 }
@@ -285,6 +362,25 @@ public class EventManager implements Listener {
                     int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
                     item.removeEnchantment(Enchantment.DIG_SPEED);
                     if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                }
+                level = data.getLevel(ExpertiseType.FISH);
+                int lure_level = level >= 5 ? level >= 9 ? 2 : 1 : 0;
+                int luck_level = level >= 13 ? level >= 16 ? level >= 22 ? level >= 29 ? 4 : 3 : 2 : 1 : 0;
+                if(cursor.getType().equals(Material.FISHING_ROD)){
+                    int lure = cursor.getEnchantmentLevel(Enchantment.LURE) + lure_level;
+                    int luck = cursor.getEnchantmentLevel(Enchantment.LUCK) + luck_level;
+                    cursor.removeEnchantment(Enchantment.LURE);
+                    cursor.removeEnchantment(Enchantment.LUCK);
+                    if(lure > 0) cursor.addUnsafeEnchantment(Enchantment.LURE, lure);
+                    if(luck > 0) cursor.addUnsafeEnchantment(Enchantment.LUCK, luck);
+                }
+                if(item.getType().equals(Material.FISHING_ROD)){
+                    int lure = item.getEnchantmentLevel(Enchantment.LURE) - lure_level;
+                    int luck = item.getEnchantmentLevel(Enchantment.LUCK) - luck_level;
+                    item.removeEnchantment(Enchantment.LURE);
+                    item.removeEnchantment(Enchantment.LUCK);
+                    if(lure > 0) item.addUnsafeEnchantment(Enchantment.LURE, lure);
+                    if(luck > 0) item.addUnsafeEnchantment(Enchantment.LUCK, luck);
                 }
             }
         }
@@ -296,6 +392,8 @@ public class EventManager implements Listener {
                 return true;
         return false;
     }
+
+    //채광, 벌목, 낚시 인첸트 관리 부분
 
     @EventHandler
     public void onPickaxeChanged(PlayerItemHeldEvent e){
@@ -338,7 +436,7 @@ public class EventManager implements Listener {
         Player player = e.getPlayer();
         PlayerData data = PlayerData.getInstance(player);
         PlayerInventory inv = e.getPlayer().getInventory();
-        int level = data.getLevel(ExpertiseType.WOODCUTTING);
+        int level = data.getLevel(ExpertiseType.WOOD);
         int efficiency_level = (level >= 4 && level <= 6) ? 1 :
                 (level >= 7 && level <= 9) ? 2 :
                 (level >= 10 && level <= 14) ? 3 :
@@ -360,6 +458,38 @@ public class EventManager implements Listener {
             int efficiency = previous.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
             previous.removeEnchantment(Enchantment.DIG_SPEED);
             if(efficiency > 0) previous.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+        }
+    }
+
+    @EventHandler
+    public void onFishingRodChanged(PlayerItemHeldEvent e){
+        Player player = e.getPlayer();
+        PlayerData data = PlayerData.getInstance(player);
+        PlayerInventory inv = e.getPlayer().getInventory();
+        int level = data.getLevel(ExpertiseType.FISH);
+        int lure_level = level >= 5 ? level >= 9 ? 2 : 1 : 0;
+        int luck_level = level >= 13 ? level >= 16 ? level >= 22 ? level >= 29 ? 4 : 3 : 2 : 1 : 0;
+        ItemStack item = inv.getItem(e.getNewSlot());
+        item = item == null ? new ItemStack(Material.AIR) : item;
+        ItemStack previous = inv.getItem(e.getPreviousSlot());
+        previous = previous == null ? new ItemStack(Material.AIR) : previous;
+        //Add
+        if(item.getType().equals(Material.FISHING_ROD)){
+            int lure = item.getEnchantmentLevel(Enchantment.LURE)+lure_level;
+            int luck = item.getEnchantmentLevel(Enchantment.LUCK)+luck_level;
+            item.removeEnchantment(Enchantment.LURE);
+            item.removeEnchantment(Enchantment.LUCK);
+            if(lure > 0) item.addUnsafeEnchantment(Enchantment.LURE, lure);
+            if(luck > 0) item.addUnsafeEnchantment(Enchantment.LUCK, luck);
+        }
+        //Remove
+        if(previous.getType().equals(Material.FISHING_ROD)){
+            int lure = previous.getEnchantmentLevel(Enchantment.LURE)-lure_level;
+            int luck = previous.getEnchantmentLevel(Enchantment.LUCK)-luck_level;
+            previous.removeEnchantment(Enchantment.LURE);
+            previous.removeEnchantment(Enchantment.LUCK);
+            if(lure > 0) previous.addUnsafeEnchantment(Enchantment.LURE, lure);
+            if(luck > 0) previous.addUnsafeEnchantment(Enchantment.LUCK, luck);
         }
     }
 
@@ -420,7 +550,7 @@ public class EventManager implements Listener {
         ItemStack item = e.getMainHandItem();
         ItemStack previous = e.getOffHandItem();
         PlayerData data = PlayerData.getInstance(player);
-        int level = data.getLevel(ExpertiseType.WOODCUTTING);
+        int level = data.getLevel(ExpertiseType.WOOD);
         int efficiency_level = (level >= 4 && level <= 6) ? 1 :
                 (level >= 7 && level <= 9) ? 2 :
                         (level >= 10 && level <= 14) ? 3 :
@@ -438,6 +568,35 @@ public class EventManager implements Listener {
             int efficiency = previous.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
             previous.removeEnchantment(Enchantment.DIG_SPEED);
             if(efficiency > 0) previous.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+        }
+    }
+
+    @EventHandler
+    public void onChangeFishingRodOtherHand(PlayerSwapHandItemsEvent e){
+        Player player = e.getPlayer();
+        ItemStack item = e.getMainHandItem();
+        ItemStack previous = e.getOffHandItem();
+        PlayerData data = PlayerData.getInstance(player);
+        int level = data.getLevel(ExpertiseType.FISH);
+        int lure_level = level >= 5 ? level >= 9 ? 2 : 1 : 0;
+        int luck_level = level >= 13 ? level >= 16 ? level >= 22 ? level >= 29 ? 4 : 3 : 2 : 1 : 0;
+        //Add
+        if(item.getType().equals(Material.FISHING_ROD)){
+            int lure = item.getEnchantmentLevel(Enchantment.LURE)+lure_level;
+            int luck = item.getEnchantmentLevel(Enchantment.LUCK)+luck_level;
+            item.removeEnchantment(Enchantment.LURE);
+            item.removeEnchantment(Enchantment.LUCK);
+            if(lure > 0) item.addUnsafeEnchantment(Enchantment.LURE, lure);
+            if(luck > 0) item.addUnsafeEnchantment(Enchantment.LUCK, luck);
+        }
+        //Remove
+        if(previous.getType().equals(Material.FISHING_ROD)){
+            int lure = previous.getEnchantmentLevel(Enchantment.LURE)-lure_level;
+            int luck = previous.getEnchantmentLevel(Enchantment.LUCK)-luck_level;
+            previous.removeEnchantment(Enchantment.LURE);
+            previous.removeEnchantment(Enchantment.LUCK);
+            if(lure > 0) previous.addUnsafeEnchantment(Enchantment.LURE, lure);
+            if(luck > 0) previous.addUnsafeEnchantment(Enchantment.LUCK, luck);
         }
     }
 
@@ -475,7 +634,7 @@ public class EventManager implements Listener {
         if(!previousItemHand.get(e.getPlayer().getUniqueId()).equals(player.getInventory().getItemInMainHand())){
             if(item.getType().toString().endsWith("_AXE")){
                 PlayerData data = PlayerData.getInstance(player);
-                int level = data.getLevel(ExpertiseType.WOODCUTTING);
+                int level = data.getLevel(ExpertiseType.WOOD);
                 int efficiency_level = (level >= 4 && level <= 6) ? 1 :
                         (level >= 7 && level <= 9) ? 2 :
                                 (level >= 10 && level <= 14) ? 3 :
@@ -490,6 +649,28 @@ public class EventManager implements Listener {
     }
 
     @EventHandler
+    public void onChangeFishingRodDropItem(PlayerDropItemEvent e){
+        Player player = e.getPlayer();
+        ItemStack item = e.getItemDrop().getItemStack();
+        if(previousItemHand.get(e.getPlayer().getUniqueId()).getType().equals(Material.AIR)) return;
+        if(!previousItemHand.get(e.getPlayer().getUniqueId()).equals(player.getInventory().getItemInMainHand())){
+            if(item.getType().equals(Material.FISHING_ROD)){
+                PlayerData data = PlayerData.getInstance(player);
+                int level = data.getLevel(ExpertiseType.FISH);
+                int lure_level = level >= 5 ? level >= 9 ? 2 : 1 : 0;
+                int luck_level = level >= 13 ? level >= 16 ? level >= 22 ? level >= 29 ? 4 : 3 : 2 : 1 : 0;
+                int lure = item.getEnchantmentLevel(Enchantment.LURE)-lure_level;
+                int luck = item.getEnchantmentLevel(Enchantment.LUCK)-luck_level;
+                item.removeEnchantment(Enchantment.LURE);
+                item.removeEnchantment(Enchantment.LUCK);
+                if(lure > 0) item.addUnsafeEnchantment(Enchantment.LURE, lure);
+                if(luck > 0) item.addUnsafeEnchantment(Enchantment.LUCK, luck);
+                e.getItemDrop().setItemStack(item);
+            }
+        }
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e){
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand().clone();
         previousItemHand.put(e.getPlayer().getUniqueId(), item);
@@ -498,6 +679,8 @@ public class EventManager implements Listener {
             if(e.getPlayer().getInventory().getItem(slot).equals(item)) break;
         slotnumber.put(e.getPlayer().getUniqueId(), slot);
     }
+
+    //제작 인첸트 관리 부분
 
     private static Enchantment[] tools_enchantment = {Enchantment.DIG_SPEED, Enchantment.SILK_TOUCH, Enchantment.LOOT_BONUS_BLOCKS};
     private static Enchantment[] fishing_enchantment = {Enchantment.LURE, Enchantment.LUCK};
@@ -593,16 +776,7 @@ public class EventManager implements Listener {
             if(block.getType().equals(Material.WHEAT) ||
                 block.getType().equals(Material.GRASS)){
                 if(block.getType().equals(Material.WHEAT) && ((Ageable)block.getBlockData()).getAge() < 7) return;
-                boolean exist = false;
-                for(ItemStack item : block.getDrops()){
-                    if(item.getType().equals(Material.WHEAT_SEEDS)){
-                        exist = true;
-                        item.setAmount(item.getAmount() + randomAmount);
-                    }
-                }
-                if(!exist){
-                    block.getDrops().add(new ItemStack(Material.WHEAT_SEEDS, randomAmount));
-                }
+                block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.WHEAT_SEEDS, randomAmount));
             }
         }
         if(crop_level > 0){
@@ -623,39 +797,19 @@ public class EventManager implements Listener {
                 if(block.getType().equals(Material.SUGAR_CANE)
                         && isNonePoint(block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ())) return;
                 if(block.getType().equals(Material.WHEAT)){
-                    for(ItemStack item : block.getDrops()){
-                        if(item.getType().equals(Material.WHEAT)){
-                            item.setAmount(item.getAmount() + randomAmount);
-                        }
-                    }
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.WHEAT, randomAmount));
                 }
                 if(block.getType().equals(Material.CARROTS)){
-                    for(ItemStack item : block.getDrops()){
-                        if(item.getType().equals(Material.CARROT)){
-                            item.setAmount(item.getAmount() + randomAmount);
-                        }
-                    }
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.CARROT, randomAmount));
                 }
                 if(block.getType().equals(Material.BEETROOTS)){
-                    for(ItemStack item : block.getDrops()){
-                        if(item.getType().equals(Material.BEETROOT)){
-                            item.setAmount(item.getAmount() + randomAmount);
-                        }
-                    }
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.BEETROOT, randomAmount));
                 }
                 if(block.getType().equals(Material.POTATOES)){
-                    for(ItemStack item : block.getDrops()){
-                        if(item.getType().equals(Material.POTATO)){
-                            item.setAmount(item.getAmount() + randomAmount);
-                        }
-                    }
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.POTATO, randomAmount));
                 }
                 if(block.getType().equals(Material.SUGAR_CANE)){
-                    for(ItemStack item : block.getDrops()){
-                        if(item.getType().equals(Material.SUGAR_CANE)){
-                            item.setAmount(item.getAmount() + randomAmount);
-                        }
-                    }
+                    block.getWorld().dropItemNaturally(block.getLocation(), new ItemStack(Material.SUGAR_CANE, randomAmount));
                 }
             }
         }
