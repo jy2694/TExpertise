@@ -17,12 +17,14 @@ public class PotionTimer extends BukkitRunnable {
             int woodLevel = data.getLevel(ExpertiseType.WOOD);
             int tillageLevel = data.getLevel(ExpertiseType.TILLAGE);
             int fishLevel = data.getLevel(ExpertiseType.FISH);
+            int huntLevel = data.getLevel(ExpertiseType.HUNT);
 
             int nightVisionLevel = mineLevel >= 26 ? 1 : 0;
             int fireResistanceLevel = woodLevel >= 30 ? 1 : 0;
             int jumpBoostLevel = tillageLevel >= 20 ? 1 : 0;
             int speedLevel = tillageLevel >= 30 ? 1 : 0;
             int breathLevel = fishLevel >= 30 ? 1 : 0;
+            int forceLevel = huntLevel >= 30 ? 1 : 0;
 
             PotionEffect nightVision = player.getPotionEffect(PotionEffectType.NIGHT_VISION);
             if(nightVision == null && nightVisionLevel > 0) player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0));
@@ -34,6 +36,12 @@ public class PotionTimer extends BukkitRunnable {
             if(speed == null && speedLevel > 0) player.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, 0));
             PotionEffect breath = player.getPotionEffect(PotionEffectType.WATER_BREATHING);
             if(breath == null && breathLevel > 0) player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, Integer.MAX_VALUE, 0));
+            PotionEffect force = player.getPotionEffect(PotionEffectType.INCREASE_DAMAGE);
+            if(force == null && forceLevel > 0) player.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, Integer.MAX_VALUE, 0));
+
+
+            int increaseHP = huntLevel > 10 ? huntLevel-10 : 0;
+            player.setMaxHealth(20 + increaseHP);
         }
     }
 }

@@ -6,22 +6,18 @@ import java.util.*;
 
 public class PlayerData {
 
-    private static List<PlayerData> playerDataList = new LinkedList<>();
+    private static final List<PlayerData> playerDataList = new LinkedList<>();
 
-    private UUID uniqueId;
-    private HashMap<ExpertiseType, Long> expValue = new HashMap<>();
+    private final UUID uniqueId;
+    private final HashMap<ExpertiseType, Long> expValue = new HashMap<>();
 
     public PlayerData(UUID uniqueId){
         this.uniqueId = uniqueId;
         Arrays.stream(ExpertiseType.values()).forEach(type -> expValue.put(type, 0L));
     }
 
-    public PlayerData(Player player){
-        this(player.getUniqueId());
-    }
-
-    public void setTotalExp(ExpertiseType type, long exp){
-        expValue.put(type, exp);
+    public UUID getUniqueId(){
+        return uniqueId;
     }
 
     public void addTotalExp(ExpertiseType type, long exp){
@@ -33,26 +29,30 @@ public class PlayerData {
     }
 
     public long getExp(ExpertiseType type){
-        int req = 60;
+        int req = type.equals(ExpertiseType.HUNT) ? 100 : 60;
         int level = 1;
         long nowExp = expValue.getOrDefault(type, 0L);
         while(nowExp >= req){
             nowExp -= req;
             level ++;
-            req = (int)Math.round(((double)req)*1.3);
+            if(type.equals(ExpertiseType.HUNT)){
+                if(level <= 10) req = (int)Math.round(((double)req)*1.8);
+            } else req = (int)Math.round(((double)req)*1.3);
         }
         if(level >= 30) return 0;
         return nowExp;
     }
 
     public int getLevel(ExpertiseType type){
-        int req = 60;
+        int req = type.equals(ExpertiseType.HUNT) ? 100 : 60;
         int level = 1;
         long nowExp = expValue.getOrDefault(type, 0L);
         while(nowExp >= req){
             nowExp -= req;
             level ++;
-            req = (int)Math.round(((double)req)*1.3);
+            if(type.equals(ExpertiseType.HUNT)){
+                if(level <= 10) req = (int)Math.round(((double)req)*1.8);
+            } else req = (int)Math.round(((double)req)*1.3);
         }
         return level;
     }
@@ -65,6 +65,10 @@ public class PlayerData {
         PlayerData data = new PlayerData(uniqueId);
         playerDataList.add(data);
         return data;
+    }
+
+    public static List<PlayerData> getPlayerDataList(){
+        return playerDataList;
     }
 
     public static PlayerData getInstance(Player player){ return getInstance(player.getUniqueId()); }

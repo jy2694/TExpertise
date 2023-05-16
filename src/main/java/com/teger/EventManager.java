@@ -8,19 +8,19 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -32,9 +32,68 @@ public class EventManager implements Listener {
 
     public static List<int[]> nonePoint = new ArrayList<>();
 
-    private SecureRandom random = new SecureRandom();
+    private final SecureRandom random = new SecureRandom();
 
     //경험치 증가 부분
+
+    @EventHandler
+    public void onEntityKill(EntityDeathEvent e){
+        LivingEntity entity = e.getEntity();
+        Player player = e.getEntity().getKiller();
+        if(player == null) return;
+        PlayerData data = PlayerData.getInstance(player);
+        int previousLevel = data.getLevel(ExpertiseType.HUNT);
+        if(entity instanceof Monster){
+            if(entity.getType().equals(EntityType.GHAST)
+                || entity.getType().equals(EntityType.MAGMA_CUBE)
+                || entity.getType().equals(EntityType.STRIDER)
+                || entity.getType().equals(EntityType.WITHER_SKELETON)
+                || entity.getType().equals(EntityType.ZOMBIFIED_PIGLIN)
+                || entity.getType().equals(EntityType.PIGLIN)
+                || entity.getType().equals(EntityType.BLAZE)
+                || entity.getType().equals(EntityType.HOGLIN)
+                || entity.getType().equals(EntityType.ZOGLIN)
+                || entity.getType().equals(EntityType.SHULKER)){
+                data.addTotalExp(ExpertiseType.HUNT, 100);
+            } else if(entity.getType().equals(EntityType.ENDER_DRAGON)
+                || entity.getType().equals(EntityType.WITHER)){
+                data.addTotalExp(ExpertiseType.HUNT, 1000);
+            } else if(entity.getType().equals(EntityType.WARDEN)){
+                data.addTotalExp(ExpertiseType.HUNT, 500);
+            } else {
+                data.addTotalExp(ExpertiseType.HUNT, 50);
+            }
+        } else {
+            data.addTotalExp(ExpertiseType.HUNT, 30);
+        }
+        int newLevel = data.getLevel(ExpertiseType.HUNT);
+        if(previousLevel < newLevel){
+            player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[HUNTING] ") + ChatColor.GREEN + " The Hunting level has increased. (" + previousLevel + " -> " + newLevel + ")");
+            ItemStack item = player.getInventory().getItemInMainHand();
+            if(item.getType().toString().endsWith("_SWORD")){
+                int previous_damage_level = previousLevel >= 4 ? previousLevel >= 6 ? previousLevel >= 8 ? 3 : 2 : 1 : 0;
+                int previous_damage_undead_level = previousLevel >= 3 ? previousLevel >= 5 ? previousLevel >= 7 ? 3 : 2 : 1 : 0;
+                int new_damage_level = newLevel >= 4 ? newLevel >= 6 ? newLevel >= 8 ? 3 : 2 : 1 : 0;
+                int new_damage_undead_level = newLevel >= 3 ? newLevel >= 5 ? newLevel >= 7 ? 3 : 2 : 1 : 0;
+                int damage = item.getEnchantmentLevel(Enchantment.DAMAGE_ALL)-previous_damage_level+new_damage_level;
+                int damage_undead = item.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD)-previous_damage_undead_level+new_damage_undead_level;
+                item.removeEnchantment(Enchantment.DAMAGE_ALL);
+                item.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+                ItemMeta enchant_meta = item.getItemMeta();
+                if(damage > 0) enchant_meta.addEnchant(Enchantment.DAMAGE_ALL, damage, true);
+                if(damage_undead > 0) enchant_meta.addEnchant(Enchantment.DAMAGE_UNDEAD, damage_undead, true);
+                item.setItemMeta(enchant_meta);
+            } else if(item.getType().equals(Material.BOW)){
+                int previous_infinite_level = previousLevel >= 10 ? 1 : 0;
+                int new_infinite_level = newLevel >= 10 ? 1 : 0;
+                int infinite = item.getEnchantmentLevel(Enchantment.ARROW_INFINITE)-previous_infinite_level+new_infinite_level;
+                item.removeEnchantment(Enchantment.ARROW_INFINITE);
+                ItemMeta enchant_meta = item.getItemMeta();
+                if(infinite > 0) enchant_meta.addEnchant(Enchantment.ARROW_INFINITE, infinite, true);
+                item.setItemMeta(enchant_meta);
+            }
+        }
+    }
 
     @EventHandler
     public void onWoodBreak(BlockBreakEvent e){
@@ -62,7 +121,9 @@ public class EventManager implements Listener {
                                                     (newLevel >= 20) ? 5 : 0;
                     int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED)-previous_efficiency_level+new_efficiency_level;
                     item.removeEnchantment(Enchantment.DIG_SPEED);
-                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                    ItemMeta meta = item.getItemMeta();
+                    if(efficiency > 0) meta.addEnchant(Enchantment.DIG_SPEED, efficiency, true);
+                    item.setItemMeta(meta);
                 }
             }
         }
@@ -98,8 +159,10 @@ public class EventManager implements Listener {
                     int fortune = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) - previous_fortune_level + new_fortune_level;
                     item.removeEnchantment(Enchantment.DIG_SPEED);
                     item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
-                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
-                    if(fortune > 0) item.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortune);
+                    ItemMeta meta = item.getItemMeta();
+                    if(efficiency > 0) meta.addEnchant(Enchantment.DIG_SPEED, efficiency, true);
+                    if(fortune > 0) meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, fortune, true);
+                    item.setItemMeta(meta);
                 }
             }
         } else if(block.getType().equals(Material.STONE)
@@ -139,8 +202,10 @@ public class EventManager implements Listener {
                     int fortune = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) - previous_fortune_level + new_fortune_level;
                     item.removeEnchantment(Enchantment.DIG_SPEED);
                     item.removeEnchantment(Enchantment.LOOT_BONUS_BLOCKS);
-                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
-                    if(fortune > 0) item.addUnsafeEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortune);
+                    ItemMeta meta = item.getItemMeta();
+                    if(efficiency > 0) meta.addEnchant(Enchantment.DIG_SPEED, efficiency, true);
+                    if(fortune > 0) meta.addEnchant(Enchantment.LOOT_BONUS_BLOCKS, fortune, true);
+                    item.setItemMeta(meta);
                 }
             }
         }
@@ -149,6 +214,7 @@ public class EventManager implements Listener {
     @EventHandler
     public void onCraftEvent(CraftItemEvent e){
         ItemStack item = e.getCurrentItem();
+        if(item == null) return;
         if(item.getType().toString().endsWith("_HELMET")
             || item.getType().toString().endsWith("_CHESTPLATE")
             || item.getType().toString().endsWith("_LEGGINGS")
@@ -168,7 +234,7 @@ public class EventManager implements Listener {
             PlayerData data = PlayerData.getInstance(player);
             int previousLevel = data.getLevel(ExpertiseType.CRAFT);
             if(previousLevel == 30) return;
-            data.addTotalExp(ExpertiseType.CRAFT, 15 * item.getAmount());
+            data.addTotalExp(ExpertiseType.CRAFT, 15L * item.getAmount());
             int newLevel = data.getLevel(ExpertiseType.CRAFT);
             if(previousLevel < newLevel)
                 player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[CRAFT] ") + ChatColor.GREEN + " The crafting level has increased. (" + previousLevel + " -> " + newLevel + ")");
@@ -177,7 +243,7 @@ public class EventManager implements Listener {
             PlayerData data = PlayerData.getInstance(player);
             int previousLevel = data.getLevel(ExpertiseType.CRAFT);
             if(previousLevel == 30) return;
-            data.addTotalExp(ExpertiseType.CRAFT, 5 * item.getAmount());
+            data.addTotalExp(ExpertiseType.CRAFT, 5L * item.getAmount());
             int newLevel = data.getLevel(ExpertiseType.CRAFT);
             if(previousLevel < newLevel)
                 player.sendMessage(ChatColor.GOLD + (ChatColor.BOLD + "[CRAFT] ") + ChatColor.GREEN + " The crafting level has increased. (" + previousLevel + " -> " + newLevel + ")");
@@ -188,12 +254,11 @@ public class EventManager implements Listener {
     @EventHandler
     public void onFishing(PlayerFishEvent e){
         Entity entity = e.getCaught();
-        if(e.getState() == PlayerFishEvent.State.CAUGHT_FISH && entity instanceof Item){
+        if(e.getState() == PlayerFishEvent.State.CAUGHT_FISH && entity instanceof Item item){
             Player player = e.getPlayer();
             PlayerData data = PlayerData.getInstance(player);
             int previousLevel = data.getLevel(ExpertiseType.FISH);
             if(previousLevel == 30) return;
-            Item item = (Item) entity;
             ItemStack itemStack = item.getItemStack();
             if(itemStack.getType().equals(Material.COD) || itemStack.getType().equals(Material.SALMON)
                 || itemStack.getType().equals(Material.TROPICAL_FISH) || itemStack.getType().equals(Material.PUFFERFISH)){
@@ -218,8 +283,10 @@ public class EventManager implements Listener {
                     int luck = hand.getEnchantmentLevel(Enchantment.LUCK) - previous_luck_level + new_luck_level;
                     hand.removeEnchantment(Enchantment.LURE);
                     hand.removeEnchantment(Enchantment.LUCK);
-                    if(lure > 0) hand.addUnsafeEnchantment(Enchantment.LURE, lure);
-                    if(luck > 0) hand.addUnsafeEnchantment(Enchantment.LUCK, luck);
+                    ItemMeta meta = hand.getItemMeta();
+                    if(lure > 0) meta.addEnchant(Enchantment.LURE, lure, true);
+                    if(luck > 0) meta.addEnchant(Enchantment.LUCK, luck, true);
+                    item.setItemMeta(meta);
                 }
             }
         }
@@ -331,7 +398,7 @@ public class EventManager implements Listener {
                 int fortune_level = (level >= 15 && level <= 22) ? 1 :
                         (level >= 23 && level <= 29) ? 2 :
                                 (level >= 30) ? 3 : 0;
-                if(cursor.getType().toString().endsWith("_PICKAXE")){
+                if(cursor != null && cursor.getType().toString().endsWith("_PICKAXE")){
                     int efficiency = cursor.getEnchantmentLevel(Enchantment.DIG_SPEED)+efficiency_level;
                     int fortune = cursor.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS)+fortune_level;
                     cursor.removeEnchantment(Enchantment.DIG_SPEED);
@@ -353,20 +420,24 @@ public class EventManager implements Listener {
                                 (level >= 10 && level <= 14) ? 3 :
                                         (level >= 15 && level <= 19) ? 4 :
                                                 (level >= 20) ? 5 : 0;
-                if(cursor.getType().toString().endsWith("_AXE")){
+                if(cursor != null && cursor.getType().toString().endsWith("_AXE")){
                     int efficiency = cursor.getEnchantmentLevel(Enchantment.DIG_SPEED)+efficiency_level;
                     cursor.removeEnchantment(Enchantment.DIG_SPEED);
-                    if(efficiency > 0) cursor.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                    ItemMeta meta = cursor.getItemMeta();
+                    if(efficiency > 0) meta.addEnchant(Enchantment.DIG_SPEED, efficiency, true);
+                    cursor.setItemMeta(meta);
                 }
                 if(item.getType().toString().endsWith("_AXE")){
                     int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
                     item.removeEnchantment(Enchantment.DIG_SPEED);
-                    if(efficiency > 0) item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
+                    ItemMeta meta = item.getItemMeta();
+                    if(efficiency > 0) meta.addEnchant(Enchantment.DIG_SPEED, efficiency, true);
+                    item.setItemMeta(meta);
                 }
                 level = data.getLevel(ExpertiseType.FISH);
                 int lure_level = level >= 5 ? level >= 9 ? 2 : 1 : 0;
                 int luck_level = level >= 13 ? level >= 16 ? level >= 22 ? level >= 29 ? 4 : 3 : 2 : 1 : 0;
-                if(cursor.getType().equals(Material.FISHING_ROD)){
+                if(cursor != null && cursor.getType().equals(Material.FISHING_ROD)){
                     int lure = cursor.getEnchantmentLevel(Enchantment.LURE) + lure_level;
                     int luck = cursor.getEnchantmentLevel(Enchantment.LUCK) + luck_level;
                     cursor.removeEnchantment(Enchantment.LURE);
@@ -381,6 +452,36 @@ public class EventManager implements Listener {
                     item.removeEnchantment(Enchantment.LUCK);
                     if(lure > 0) item.addUnsafeEnchantment(Enchantment.LURE, lure);
                     if(luck > 0) item.addUnsafeEnchantment(Enchantment.LUCK, luck);
+                }
+                level = data.getLevel(ExpertiseType.HUNT);
+                int damage_undead_level = level >= 3 ? level >= 5 ? level >= 7 ? 3 : 2 : 1 : 0;
+                int damage_level = level >= 4 ? level >= 6 ? level >= 8 ? 3 : 2 : 1 : 0;
+                int infinite_level = level >= 10 ? 1 : 0;
+                if(cursor != null && cursor.getType().toString().endsWith("_SWORD")){
+                    int damage_undead = cursor.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD) + damage_undead_level;
+                    int damage = cursor.getEnchantmentLevel(Enchantment.DAMAGE_ALL) + damage_level;
+                    cursor.removeEnchantment(Enchantment.DAMAGE_ALL);
+                    cursor.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+                    if(damage_undead > 0) cursor.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+                    if(damage > 0) cursor.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+                }
+                if(item != null & item.getType().toString().endsWith("_SWORD")){
+                    int damage_undead = item.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD) - damage_undead_level;
+                    int damage = item.getEnchantmentLevel(Enchantment.DAMAGE_ALL) - damage_level;
+                    item.removeEnchantment(Enchantment.DAMAGE_ALL);
+                    item.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+                    if(damage_undead > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+                    if(damage > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+                }
+                if(cursor != null && cursor.getType().equals(Material.BOW)){
+                    int infinite = cursor.getEnchantmentLevel(Enchantment.ARROW_INFINITE) + infinite_level;
+                    cursor.removeEnchantment(Enchantment.ARROW_INFINITE);
+                    if(infinite > 0) cursor.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
+                }
+                if(item != null && item.getType().equals(Material.BOW)){
+                    int infinite = item.getEnchantmentLevel(Enchantment.ARROW_INFINITE) - infinite_level;
+                    item.removeEnchantment(Enchantment.ARROW_INFINITE);
+                    if(infinite > 0) item.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
                 }
             }
         }
@@ -493,8 +594,48 @@ public class EventManager implements Listener {
         }
     }
 
-    private static HashMap<UUID, ItemStack> previousItemHand = new HashMap<>();
-    private static HashMap<UUID, Integer> slotnumber = new HashMap<>();
+    @EventHandler
+    public void onSwordAndBowChanged(PlayerItemHeldEvent e){
+        Player player = e.getPlayer();
+        PlayerInventory inv = e.getPlayer().getInventory();
+        PlayerData data = PlayerData.getInstance(player);
+        int level = data.getLevel(ExpertiseType.HUNT);
+        int damage_undead_level = level >= 3 ? level >= 5 ? level >= 7 ? 3 : 2 : 1 : 0;
+        int damage_level = level >= 4 ? level >= 6 ? level >= 8 ? 3 : 2 : 1 : 0;
+        int infinite_level = level >= 10 ? 1 : 0;
+        ItemStack item = inv.getItem(e.getNewSlot());
+        item = item == null ? new ItemStack(Material.AIR) : item;
+        ItemStack previous = inv.getItem(e.getPreviousSlot());
+        previous = previous == null ? new ItemStack(Material.AIR) : previous;
+        if(item.getType().toString().endsWith("_SWORD")){
+            int damage_undead = item.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD) + damage_undead_level;
+            int damage = item.getEnchantmentLevel(Enchantment.DAMAGE_ALL) + damage_level;
+            item.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+            item.removeEnchantment(Enchantment.DAMAGE_ALL);
+            if(damage_undead > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+            if(damage > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+        } else if(item.getType().equals(Material.BOW)){
+            int infinite = item.getEnchantmentLevel(Enchantment.ARROW_INFINITE) + infinite_level;
+            item.removeEnchantment(Enchantment.ARROW_INFINITE);
+            if(infinite > 0) item.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
+        }
+
+        if(previous.getType().toString().endsWith("_SWORD")){
+            int damage_undead = previous.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD) - damage_undead_level;
+            int damage = previous.getEnchantmentLevel(Enchantment.DAMAGE_ALL) - damage_level;
+            previous.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+            previous.removeEnchantment(Enchantment.DAMAGE_ALL);
+            if(damage_undead > 0) previous.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+            if(damage > 0) previous.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+        } else if(previous.getType().equals(Material.BOW)){
+            int infinite = previous.getEnchantmentLevel(Enchantment.ARROW_INFINITE) - infinite_level;
+            previous.removeEnchantment(Enchantment.ARROW_INFINITE);
+            if(infinite > 0) previous.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
+        }
+    }
+
+    private final static HashMap<UUID, ItemStack> previousItemHand = new HashMap<>();
+    private final static HashMap<UUID, Integer> slotnumber = new HashMap<>();
 
     @EventHandler
     public void saveItemStackForDetectItemDropByHand(PlayerItemHeldEvent e){
@@ -525,7 +666,7 @@ public class EventManager implements Listener {
                 (level >= 23 && level <= 29) ? 2 :
                         (level >= 30) ? 3 : 0;
         //Add
-        if(item.getType().toString().endsWith("_PICKAXE")){
+        if(item != null && item.getType().toString().endsWith("_PICKAXE")){
             int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED)+efficiency_level;
             int fortune = item.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS)+fortune_level;
             item.removeEnchantment(Enchantment.DIG_SPEED);
@@ -534,7 +675,7 @@ public class EventManager implements Listener {
             if(fortune > 0)item.addEnchantment(Enchantment.LOOT_BONUS_BLOCKS, fortune);
         }
         //Remove
-        if(previous.getType().toString().endsWith("_PICKAXE")){
+        if(previous != null && previous.getType().toString().endsWith("_PICKAXE")){
             int efficiency = previous.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
             int fortune = previous.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS)-fortune_level;
             previous.removeEnchantment(Enchantment.DIG_SPEED);
@@ -557,14 +698,14 @@ public class EventManager implements Listener {
                                 (level >= 15 && level <= 19) ? 4 :
                                         (level >= 20) ? 5 : 0;
         //Add
-        if(item.getType().toString().endsWith("_AXE")){
+        if(item != null && item.getType().toString().endsWith("_AXE")){
             int efficiency = item.getEnchantmentLevel(Enchantment.DIG_SPEED)+efficiency_level;
             item.removeEnchantment(Enchantment.DIG_SPEED);
             if(efficiency > 0)
                 item.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
         }
         //Remove
-        if(previous.getType().toString().endsWith("_AXE")){
+        if(previous != null && previous.getType().toString().endsWith("_AXE")){
             int efficiency = previous.getEnchantmentLevel(Enchantment.DIG_SPEED)-efficiency_level;
             previous.removeEnchantment(Enchantment.DIG_SPEED);
             if(efficiency > 0) previous.addUnsafeEnchantment(Enchantment.DIG_SPEED, efficiency);
@@ -581,7 +722,7 @@ public class EventManager implements Listener {
         int lure_level = level >= 5 ? level >= 9 ? 2 : 1 : 0;
         int luck_level = level >= 13 ? level >= 16 ? level >= 22 ? level >= 29 ? 4 : 3 : 2 : 1 : 0;
         //Add
-        if(item.getType().equals(Material.FISHING_ROD)){
+        if(item != null && item.getType().equals(Material.FISHING_ROD)){
             int lure = item.getEnchantmentLevel(Enchantment.LURE)+lure_level;
             int luck = item.getEnchantmentLevel(Enchantment.LUCK)+luck_level;
             item.removeEnchantment(Enchantment.LURE);
@@ -590,13 +731,50 @@ public class EventManager implements Listener {
             if(luck > 0) item.addUnsafeEnchantment(Enchantment.LUCK, luck);
         }
         //Remove
-        if(previous.getType().equals(Material.FISHING_ROD)){
+        if(previous != null && previous.getType().equals(Material.FISHING_ROD)){
             int lure = previous.getEnchantmentLevel(Enchantment.LURE)-lure_level;
             int luck = previous.getEnchantmentLevel(Enchantment.LUCK)-luck_level;
             previous.removeEnchantment(Enchantment.LURE);
             previous.removeEnchantment(Enchantment.LUCK);
             if(lure > 0) previous.addUnsafeEnchantment(Enchantment.LURE, lure);
             if(luck > 0) previous.addUnsafeEnchantment(Enchantment.LUCK, luck);
+        }
+    }
+
+    @EventHandler
+    public void onChangeSwordAndBowOtherHand(PlayerSwapHandItemsEvent e){
+        Player player = e.getPlayer();
+        ItemStack item = e.getMainHandItem();
+        ItemStack previous = e.getOffHandItem();
+        PlayerData data = PlayerData.getInstance(player);
+        int level = data.getLevel(ExpertiseType.HUNT);
+        int damage_undead_level = level >= 3 ? level >= 5 ? level >= 7 ? 3 : 2 : 1 : 0;
+        int damage_level = level >= 4 ? level >= 6 ? level >= 8 ? 3 : 2 : 1 : 0;
+        int infinite_level = level >= 10 ? 1 : 0;
+        if(item != null && item.getType().toString().endsWith("_SWORD")){
+            int damage_undead = item.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD) + damage_undead_level;
+            int damage = item.getEnchantmentLevel(Enchantment.DAMAGE_ALL) + damage_level;
+            item.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+            item.removeEnchantment(Enchantment.DAMAGE_ALL);
+            if(damage_undead > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+            if(damage > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+        } else if(item != null && item.getType().equals(Material.BOW)){
+            int infinite = item.getEnchantmentLevel(Enchantment.ARROW_INFINITE) + infinite_level;
+            item.removeEnchantment(Enchantment.ARROW_INFINITE);
+            if(infinite > 0) item.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
+        }
+
+        if(previous != null && previous.getType().toString().endsWith("_SWORD")){
+            int damage_undead = previous.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD) - damage_undead_level;
+            int damage = previous.getEnchantmentLevel(Enchantment.DAMAGE_ALL) - damage_level;
+            previous.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+            previous.removeEnchantment(Enchantment.DAMAGE_ALL);
+            if(damage_undead > 0) previous.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+            if(damage > 0) previous.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+        } else if(previous != null && previous.getType().equals(Material.BOW)){
+            int infinite = previous.getEnchantmentLevel(Enchantment.ARROW_INFINITE) - infinite_level;
+            previous.removeEnchantment(Enchantment.ARROW_INFINITE);
+            if(infinite > 0) previous.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
         }
     }
 
@@ -671,48 +849,80 @@ public class EventManager implements Listener {
     }
 
     @EventHandler
+    public void onChangeSwordAndBowDropItem(PlayerDropItemEvent e){
+        Player player = e.getPlayer();
+        ItemStack item = e.getItemDrop().getItemStack();
+        if(previousItemHand.get(e.getPlayer().getUniqueId()).getType().equals(Material.AIR)) return;
+        if(!previousItemHand.get(e.getPlayer().getUniqueId()).equals(player.getInventory().getItemInMainHand())) {
+            if (item.getType().toString().endsWith("_SWORD")) {
+                PlayerData data = PlayerData.getInstance(player);
+                int level = data.getLevel(ExpertiseType.HUNT);
+                int damage_undead_level = level >= 3 ? level >= 5 ? level >= 7 ? 3 : 2 : 1 : 0;
+                int damage_level = level >= 4 ? level >= 6 ? level >= 8 ? 3 : 2 : 1 : 0;
+                int damage_undead = item.getEnchantmentLevel(Enchantment.DAMAGE_UNDEAD)-damage_undead_level;
+                int damage = item.getEnchantmentLevel(Enchantment.DAMAGE_ALL)-damage_level;
+                item.removeEnchantment(Enchantment.DAMAGE_UNDEAD);
+                item.removeEnchantment(Enchantment.DAMAGE_ALL);
+                if(damage_undead > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, damage_undead);
+                if(damage > 0) item.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, damage);
+                e.getItemDrop().setItemStack(item);
+            } else if(item.getType().equals(Material.BOW)){
+                PlayerData data = PlayerData.getInstance(player);
+                int level = data.getLevel(ExpertiseType.HUNT);
+                int infinite_level = level >= 10 ? 1 : 0;
+                int infinite = item.getEnchantmentLevel(Enchantment.ARROW_INFINITE)-infinite_level;
+                item.removeEnchantment(Enchantment.ARROW_INFINITE);
+                if(infinite > 0) item.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, infinite);
+            }
+        }
+
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e){
         ItemStack item = e.getPlayer().getInventory().getItemInMainHand().clone();
         previousItemHand.put(e.getPlayer().getUniqueId(), item);
         int slot;
-        for(slot = 0; slot < 9; slot ++)
-            if(e.getPlayer().getInventory().getItem(slot).equals(item)) break;
+        for(slot = 0; slot < 9; slot ++) {
+            ItemStack itemStack = e.getPlayer().getInventory().getItem(slot);
+            if (itemStack != null && itemStack.equals(item)) break;
+        }
         slotnumber.put(e.getPlayer().getUniqueId(), slot);
     }
 
     //제작 인첸트 관리 부분
 
-    private static Enchantment[] tools_enchantment = {Enchantment.DIG_SPEED, Enchantment.SILK_TOUCH, Enchantment.LOOT_BONUS_BLOCKS};
-    private static Enchantment[] fishing_enchantment = {Enchantment.LURE, Enchantment.LUCK};
-    private static Enchantment[] sword_enchantment = {Enchantment.DAMAGE_ALL,
+    private final static Enchantment[] tools_enchantment = {Enchantment.DIG_SPEED, Enchantment.SILK_TOUCH, Enchantment.LOOT_BONUS_BLOCKS};
+    private final static Enchantment[] fishing_enchantment = {Enchantment.LURE, Enchantment.LUCK};
+    private final static Enchantment[] sword_enchantment = {Enchantment.DAMAGE_ALL,
             Enchantment.DAMAGE_UNDEAD,
             Enchantment.DAMAGE_ARTHROPODS,
             Enchantment.KNOCKBACK,
             Enchantment.FIRE_ASPECT,
             Enchantment.SWEEPING_EDGE,
             Enchantment.LOOT_BONUS_MOBS };
-    private static Enchantment[] axe_enchantment = {Enchantment.LOOT_BONUS_BLOCKS,Enchantment.DAMAGE_ALL,
+    private final static Enchantment[] axe_enchantment = {Enchantment.LOOT_BONUS_BLOCKS,Enchantment.DAMAGE_ALL,
             Enchantment.DAMAGE_UNDEAD,
             Enchantment.DAMAGE_ARTHROPODS,
             Enchantment.KNOCKBACK,
             Enchantment.FIRE_ASPECT,
             Enchantment.SWEEPING_EDGE,
             Enchantment.LOOT_BONUS_MOBS};
-    private static Enchantment[] bow_enchantment = {Enchantment.ARROW_DAMAGE, Enchantment.ARROW_KNOCKBACK, Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE};
-    private static Enchantment[] crossbow_enchantment = {Enchantment.QUICK_CHARGE, Enchantment.MULTISHOT, Enchantment.PIERCING};
-    private static Enchantment[] helmet_enchantment = {Enchantment.PROTECTION_ENVIRONMENTAL,
+    private final static Enchantment[] bow_enchantment = {Enchantment.ARROW_DAMAGE, Enchantment.ARROW_KNOCKBACK, Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE};
+    private final static Enchantment[] crossbow_enchantment = {Enchantment.QUICK_CHARGE, Enchantment.MULTISHOT, Enchantment.PIERCING};
+    private final static Enchantment[] helmet_enchantment = {Enchantment.PROTECTION_ENVIRONMENTAL,
             Enchantment.PROTECTION_FIRE,
             Enchantment.PROTECTION_PROJECTILE,
             Enchantment.PROTECTION_EXPLOSIONS,
             Enchantment.THORNS,
             Enchantment.OXYGEN,
             Enchantment.WATER_WORKER};
-    private static Enchantment[] chestplate_leggings_enchantment = {Enchantment.PROTECTION_ENVIRONMENTAL,
+    private final static Enchantment[] chestplate_leggings_enchantment = {Enchantment.PROTECTION_ENVIRONMENTAL,
             Enchantment.PROTECTION_FIRE,
             Enchantment.PROTECTION_PROJECTILE,
             Enchantment.PROTECTION_EXPLOSIONS,
             Enchantment.THORNS};
-    private static Enchantment[] boots_enchantment = {Enchantment.PROTECTION_ENVIRONMENTAL,
+    private final static Enchantment[] boots_enchantment = {Enchantment.PROTECTION_ENVIRONMENTAL,
             Enchantment.PROTECTION_FIRE,
             Enchantment.PROTECTION_PROJECTILE,
             Enchantment.PROTECTION_EXPLOSIONS,
@@ -727,6 +937,7 @@ public class EventManager implements Listener {
         PlayerData data = PlayerData.getInstance(player);
         int level = data.getLevel(ExpertiseType.CRAFT);
         ItemStack item = e.getCurrentItem();
+        if(item == null) return;
         int max_level = (level >= 5 && level <= 10) ? 1 : (level >= 11 && level <= 15) ? 2 : (level >= 16) ? 3 : 0;
         if(max_level > 0){
             int enchantLevel = random.nextInt(max_level+1);

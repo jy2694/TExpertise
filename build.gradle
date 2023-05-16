@@ -25,6 +25,7 @@ repositories {
 }
 
 spigot {
+    name = 'TExpertise'
     apiVersion = '1.18'
     commands {
         job {

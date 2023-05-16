@@ -5,10 +5,11 @@ public enum ExpertiseType {
     MINE("MINE"),
     TILLAGE("TILLAGE"),
     WOOD("WOODCUTTING"),
-    FISH("FISHING");
+    FISH("FISHING"),
+    HUNT("HUNTING");
 
 
-    private String name;
+    private final String name;
 
     ExpertiseType(String name){
         this.name = name;
