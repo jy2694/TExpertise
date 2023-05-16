@@ -1,4 +1,4 @@
-package com.teger.expertise;
+package com.teger.texpertise.expertise;
 
 import org.bukkit.entity.Player;
 

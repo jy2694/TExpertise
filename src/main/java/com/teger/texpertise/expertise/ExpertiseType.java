@@ -1,4 +1,4 @@
-package com.teger.expertise;
+package com.teger.texpertise.expertise;
 
 public enum ExpertiseType {
     CRAFT("CRAFT"),

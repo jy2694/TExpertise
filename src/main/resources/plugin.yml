@@ -1,0 +1,6 @@
+name: TExpertise
+version: '${version}'
+main: com.teger.texpertise.TExpertise
+api-version: 1.19
+commands:
+  숙련도:

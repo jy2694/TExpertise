@@ -1,7 +1,7 @@
-package com.teger;
+package com.teger.texpertise;
 
-import com.teger.expertise.ExpertiseType;
-import com.teger.expertise.PlayerData;
+import com.teger.texpertise.expertise.ExpertiseType;
+import com.teger.texpertise.expertise.PlayerData;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 

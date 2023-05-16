@@ -1,4 +1,4 @@
-package com.teger;
+package com.teger.texpertise;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,7 +17,7 @@ public class TExpertise extends JavaPlugin {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        getCommand("job").setExecutor(new CommandManager());
+        getCommand("숙련도").setExecutor(new CommandManager());
         Bukkit.getPluginManager().registerEvents(new EventManager(), this);
         new PotionTimer().runTaskTimer(this, 20L, 20L);
     }

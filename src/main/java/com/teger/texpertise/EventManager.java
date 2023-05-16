@@ -1,7 +1,7 @@
-package com.teger;
+package com.teger.texpertise;
 
-import com.teger.expertise.ExpertiseType;
-import com.teger.expertise.PlayerData;
+import com.teger.texpertise.expertise.ExpertiseType;
+import com.teger.texpertise.expertise.PlayerData;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -286,7 +286,7 @@ public class EventManager implements Listener {
                     ItemMeta meta = hand.getItemMeta();
                     if(lure > 0) meta.addEnchant(Enchantment.LURE, lure, true);
                     if(luck > 0) meta.addEnchant(Enchantment.LUCK, luck, true);
-                    item.setItemMeta(meta);
+                    hand.setItemMeta(meta);
                 }
             }
         }

@@ -1,18 +1,17 @@
-package com.teger;
+package com.teger.texpertise;
 
-import com.teger.expertise.ExpertiseType;
-import com.teger.expertise.PlayerData;
+import com.teger.texpertise.expertise.ExpertiseType;
+import com.teger.texpertise.expertise.PlayerData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class CommandManager implements CommandExecutor {
 
 
     @Override
-    public boolean onCommand(@NotNull CommandSender cs, @NotNull Command c, @NotNull String l, @NotNull String[] a) {
+    public boolean onCommand(CommandSender cs, Command c, String l, String[] a) {
         if(!(cs instanceof Player player)) return true;
         if(a.length > 0){
             PlayerData data = PlayerData.getInstance(player);
